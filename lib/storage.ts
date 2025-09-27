@@ -60,6 +60,10 @@ export interface IStorage {
   // Availability methods
   getAvailability(resourceType: string, resourceId: number): Promise<Availability[]>;
   createAvailability(availability: InsertAvailability): Promise<Availability>;
+  getPropertyAvailability(propertyId: number, startDate: Date, endDate: Date): Promise<Availability[]>;
+  updatePropertyAvailability(propertyId: number, availabilityRecords: InsertAvailability[]): Promise<void>;
+  clearPropertyAvailability(propertyId: number): Promise<void>;
+  isPropertyAvailable(propertyId: number, startDate: Date, endDate: Date): Promise<boolean>;
 }
 
 class DatabaseStorage implements IStorage {
@@ -293,14 +297,13 @@ class DatabaseStorage implements IStorage {
   // Availability methods
   async getAvailability(resourceType: string, resourceId: number): Promise<Availability[]> {
     try {
-      return await db.select().from(availability)
-        .where(
-          and(
-            eq(availability.resourceType, resourceType),
-            eq(availability.resourceId, resourceId)
-          )
-        )
-        .orderBy(availability.date);
+      // For now, only support 'property' resource type since that's what our schema supports
+      if (resourceType === 'property') {
+        return await db.select().from(availability)
+          .where(eq(availability.propertyId, resourceId))
+          .orderBy(availability.startDate);
+      }
+      return [];
     } catch (error) {
       console.error('Error fetching availability:', error);
       return [];
@@ -310,6 +313,68 @@ class DatabaseStorage implements IStorage {
   async createAvailability(availabilityData: InsertAvailability): Promise<Availability> {
     const result = await db.insert(availability).values(availabilityData).returning();
     return result[0];
+  }
+
+  // Additional availability methods for Airbnb integration
+  async getPropertyAvailability(propertyId: number, startDate: Date, endDate: Date): Promise<Availability[]> {
+    try {
+      return await db.select().from(availability)
+        .where(
+          and(
+            eq(availability.propertyId, propertyId),
+            gte(availability.startDate, startDate),
+            lte(availability.endDate, endDate)
+          )
+        )
+        .orderBy(availability.startDate);
+    } catch (error) {
+      console.error('Error fetching property availability:', error);
+      return [];
+    }
+  }
+
+  async updatePropertyAvailability(propertyId: number, availabilityRecords: InsertAvailability[]): Promise<void> {
+    try {
+      // Insert new availability records
+      if (availabilityRecords.length > 0) {
+        await db.insert(availability).values(availabilityRecords);
+      }
+    } catch (error) {
+      console.error('Error updating property availability:', error);
+      throw error;
+    }
+  }
+
+  async clearPropertyAvailability(propertyId: number): Promise<void> {
+    try {
+      await db.delete(availability)
+        .where(eq(availability.propertyId, propertyId));
+    } catch (error) {
+      console.error('Error clearing property availability:', error);
+      throw error;
+    }
+  }
+
+  async isPropertyAvailable(propertyId: number, startDate: Date, endDate: Date): Promise<boolean> {
+    try {
+      const blockedDates = await db.select().from(availability)
+        .where(
+          and(
+            eq(availability.propertyId, propertyId),
+            gte(availability.startDate, startDate),
+            lte(availability.endDate, endDate),
+            or(
+              eq(availability.status, 'blocked'),
+              eq(availability.status, 'booked')
+            )
+          )
+        );
+      
+      return blockedDates.length === 0;
+    } catch (error) {
+      console.error('Error checking property availability:', error);
+      return false;
+    }
   }
 }
 

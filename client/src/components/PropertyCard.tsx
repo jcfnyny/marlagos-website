@@ -64,8 +64,8 @@ export default function PropertyCard({
   };
 
   const handleViewDetails = () => {
-    // Navigate to guide page for detailed property information
-    setLocation('/guide');
+    // Navigate to property details page
+    setLocation(`/properties/${id}`);
   };
 
   return (
