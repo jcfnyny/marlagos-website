@@ -1,0 +1,43 @@
+/* Leaflet Map Custom Styles */
+
+.custom-marker-icon {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.leaflet-container {
+  font-family: inherit;
+  outline: none;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.leaflet-popup-tip {
+  background: white !important;
+}
+
+.custom-popup .leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4;
+}
+
+/* Fix for marker icon positioning */
+.leaflet-marker-icon {
+  position: relative !important;
+}
+
+/* Responsive map styling */
+@media (max-width: 768px) {
+  .leaflet-control-zoom {
+    margin-left: 10px !important;
+    margin-top: 10px !important;
+  }
+  
+  .leaflet-popup-content-wrapper {
+    max-width: 280px !important;
+  }
+}

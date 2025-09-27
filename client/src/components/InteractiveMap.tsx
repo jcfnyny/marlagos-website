@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Icon, LatLngExpression } from 'leaflet';
+import { Icon, LatLngExpression, DivIcon } from 'leaflet';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Star, MapPin, Navigation, Phone, Clock, Utensils, Waves, Building } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
+import './InteractiveMap.css';
 
 interface MapLocation {
   id: string;
@@ -49,33 +50,54 @@ interface InteractiveMapProps {
   }>;
 }
 
-export default function InteractiveMap({ attractions, restaurants, beaches }: InteractiveMapProps) {
+export default function InteractiveMap({ 
+  attractions = [], 
+  restaurants = [], 
+  beaches = [] 
+}: InteractiveMapProps) {
   const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [isMapReady, setIsMapReady] = useState(false);
   
   // Lagos coordinates - center of the map
   const lagosCenter: LatLngExpression = [37.1028, -8.6742];
 
-  // Fix for default markers in production
+  // Fix for default markers in production - more robust approach
   useEffect(() => {
-    // Fix Leaflet's default icon path issues
-    delete (Icon.Default.prototype as any)._getIconUrl;
-    Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-    });
+    try {
+      // Fix Leaflet's default icon path issues
+      const DefaultIcon = Icon.Default;
+      delete (DefaultIcon.prototype as any)._getIconUrl;
+      
+      DefaultIcon.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+      });
+      setMapError(null);
+      setIsMapReady(true);
+    } catch (error) {
+      console.error('Error initializing Leaflet icons:', error);
+      setMapError('Failed to initialize map icons');
+      setIsMapReady(false);
+    }
   }, []);
   
-  // Convert data to map locations with proper coordinates
-  const mapLocations: MapLocation[] = [
+  // Convert data to map locations with proper coordinates - memoized for performance
+  const mapLocations: MapLocation[] = useMemo(() => [
     // Attractions
     ...attractions.map(attraction => {
-      const [latStr, lngStr] = attraction.coordinates.split(', ');
+      // Handle coordinate parsing more safely
+      const coordinates = attraction.coordinates?.split(', ') || ['37.1028', '-8.6742'];
+      const [latStr, lngStr] = coordinates;
       return {
         id: `attraction-${attraction.id}`,
         name: attraction.name,
         category: 'attraction' as const,
-        position: { lat: parseFloat(latStr), lng: parseFloat(lngStr) },
+        position: { 
+          lat: parseFloat(latStr) || 37.1028, 
+          lng: parseFloat(lngStr) || -8.6742 
+        },
         rating: attraction.rating,
         description: attraction.description,
         estimatedTime: attraction.estimatedTime,
@@ -108,25 +130,37 @@ export default function InteractiveMap({ attractions, restaurants, beaches }: In
       description: beach.description,
       walkTime: beach.walkTime,
     })),
-  ];
+  ], [attractions, restaurants, beaches]);
 
-  // Create custom icons for different categories
-  const createIcon = (category: string) => {
-    const color = getCategoryColor(category);
-    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
-      <circle cx="12" cy="12" r="10" fill="${color}" stroke="white" stroke-width="2"/>
-      <text x="12" y="16" text-anchor="middle" fill="white" font-size="8" font-weight="bold">
-        ${category === 'attraction' ? 'A' : category === 'restaurant' ? 'R' : 'B'}
-      </text>
-    </svg>`;
-    
-    return new Icon({
-      iconUrl: `data:image/svg+xml;base64,${btoa(svgIcon)}`,
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32],
-    });
-  };
+  // Create custom icons for different categories - memoized for performance
+  const createIcon = useMemo(() => {
+    return (category: string) => {
+      const color = getCategoryColor(category);
+      const letter = category === 'attraction' ? 'A' : category === 'restaurant' ? 'R' : 'B';
+      
+      // Use DivIcon for better compatibility
+      return new DivIcon({
+        className: 'custom-marker-icon',
+        html: `<div style="
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background-color: ${color};
+          border: 3px solid white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          font-size: 14px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        ">${letter}</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32],
+      });
+    };
+  }, []);
 
   const handleDirections = (location: MapLocation) => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${location.position.lat},${location.position.lng}`;
@@ -150,28 +184,45 @@ export default function InteractiveMap({ attractions, restaurants, beaches }: In
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'attraction':
-        return '#1E40AF'; // Blue
-      case 'restaurant':
-        return '#DC2626'; // Red  
-      case 'beach':
-        return '#059669'; // Green
-      default:
-        return '#6B7280'; // Gray
-    }
-  };
+  const getCategoryColor = useMemo(() => {
+    return (category: string) => {
+      switch (category) {
+        case 'attraction':
+          return '#1E40AF'; // Blue
+        case 'restaurant':
+          return '#DC2626'; // Red  
+        case 'beach':
+          return '#059669'; // Green
+        default:
+          return '#6B7280'; // Gray
+      }
+    };
+  }, []);
 
   return (
     <div className="space-y-4" data-testid="interactive-map">
+
       {/* Interactive Leaflet Map */}
       <div className="h-96 w-full rounded-lg overflow-hidden border">
-        <MapContainer
+        {mapError ? (
+          <div className="h-full w-full flex items-center justify-center bg-gray-100">
+            <div className="text-center p-8">
+              <MapPin className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Map Unavailable</h3>
+              <p className="text-gray-500 mb-4">{mapError}</p>
+              <Button onClick={() => setMapError(null)}>Try Again</Button>
+            </div>
+          </div>
+        ) : (
+          <MapContainer
           center={lagosCenter}
           zoom={13}
           style={{ height: '100%', width: '100%' }}
           className="leaflet-container"
+          scrollWheelZoom={true}
+          zoomControl={true}
+          doubleClickZoom={true}
+          dragging={true}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -253,6 +304,7 @@ export default function InteractiveMap({ attractions, restaurants, beaches }: In
             </Marker>
           ))}
         </MapContainer>
+        )}
       </div>
 
       {/* Selected Location Details */}
