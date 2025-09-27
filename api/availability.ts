@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { icalService } from '../server/icalService';
+import { storage } from '../lib/storage';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
@@ -26,8 +26,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const start = startDate ? new Date(startDate as string) : new Date();
       const end = endDate ? new Date(endDate as string) : new Date(Date.now() + 90 * 24 * 60 * 60 * 1000); // 90 days from now
       
-      // Get availability from iCal service
-      const availability = await icalService.getPropertyAvailability(id, start, end);
+      // Get availability from storage
+      const availability = await storage.getPropertyAvailability(id, start, end);
       
       res.json(availability);
     } else {
