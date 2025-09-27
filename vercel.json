@@ -1,18 +1,9 @@
 ﻿{
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "buildCommand": "npm run build",
-        "outputDirectory": "dist"
-      }
-    }
-  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "functions": {
     "api/**/*.ts": {
-      "runtime": "@vercel/node@3"
+      "runtime": "nodejs20.x"
     }
   },
   "rewrites": [
@@ -22,7 +13,7 @@
     },
     {
       "source": "/((?!api/).*)",
-      "destination": "/client/index.html"
+      "destination": "/index.html"
     }
   ]
 }
