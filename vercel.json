@@ -1,4 +1,8 @@
 {
+  "redirects": [
+    { "source": "/assets/generated_images/Sea_kayaking_Lagos_Portugal_f0637eb8.png", "destination": "/images/activities/sea-kayaking.jpg", "permanent": true },
+    { "source": "/assets/generated_images/Lagos_historic_town_center_d4804067.png", "destination": "/images/activities/old-town.jpg", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/((?!api/|assets/|images/).*)", "destination": "/index.html" }
   ]
