@@ -13,6 +13,8 @@ import Events from "@/pages/Events";
 import Guests from "@/pages/Guests";
 import History from "@/pages/History";
 import Location from "@/pages/Location";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,6 +30,8 @@ function Router() {
         <Route path="/guests" component={Guests} />
         <Route path="/history" component={History} />
         <Route path="/location" component={Location} />
+        <Route path="/privacy" component={Privacy} />
+        <Route path="/terms" component={Terms} />
         {/* Fallback to 404 */}
         <Route component={NotFound} />
       </Switch>
