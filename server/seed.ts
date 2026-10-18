@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { properties, activities } from "@shared/schema";
+import { activityCatalog } from "@shared/activityCatalog";
 
 export async function seedDatabase() {
   // Insert sample properties - Updated with real Airbnb listing information
@@ -36,99 +37,8 @@ export async function seedDatabase() {
     }
   ];
 
-  // Insert sample activities
-  const sampleActivities = [
-    {
-      title: "Sea Kayaking Adventure",
-      category: "Water Sports",
-      description: "Explore the stunning coastline and hidden sea caves of Ponta da Piedade. Perfect for adventure seekers looking to discover Lagos from the water.",
-      duration: "3 hours",
-      price: "45",
-      currency: "€",
-      rating: "4.8",
-      reviewCount: 89,
-      maxParticipants: 12,
-      image: "/assets/generated_images/Sea_kayaking_Lagos_Portugal_f0637eb8.png",
-      location: "Ponta da Piedade",
-      difficulty: "Moderate",
-      coordinates: "37.0833,-8.6667"
-    },
-    {
-      title: "Historic Lagos Walking Tour",
-      category: "Cultural",
-      description: "Discover the rich history and culture of Lagos with our expert local guides. Visit ancient walls, churches, and traditional markets.",
-      duration: "2.5 hours",
-      price: "25",
-      currency: "€",
-      rating: "4.9",
-      reviewCount: 156,
-      maxParticipants: 15,
-      image: "/assets/generated_images/Lagos_historic_town_center_d4804067.png",
-      location: "Lagos Historic Center",
-      difficulty: "Easy",
-      coordinates: "37.1025,-8.6700"
-    },
-    {
-      title: "Benagil Cave Boat Tour",
-      category: "Water Sports",
-      description: "Visit the famous Benagil Cave and other hidden grottos along the Algarve coast. Includes swimming stops and snorkeling equipment.",
-      duration: "4 hours",
-      price: "65",
-      currency: "€",
-      rating: "4.7",
-      reviewCount: 203,
-      maxParticipants: 20,
-      image: "/assets/generated_images/Sea_kayaking_Lagos_Portugal_f0637eb8.png",
-      location: "Lagos Marina",
-      difficulty: "Easy",
-      coordinates: "37.1028,-8.6742"
-    },
-    {
-      title: "Cliff Top Hiking Experience",
-      category: "Adventure",
-      description: "Scenic hiking along dramatic coastal cliffs with breathtaking ocean views. Perfect for nature lovers and photography enthusiasts.",
-      duration: "5 hours",
-      price: "35",
-      currency: "€",
-      rating: "4.6",
-      reviewCount: 124,
-      maxParticipants: 8,
-      image: "/assets/generated_images/Lagos_historic_town_center_d4804067.png",
-      location: "Sagres Peninsula",
-      difficulty: "Challenging",
-      coordinates: "37.0000,-8.9333"
-    },
-    {
-      title: "Sunset Photography Workshop",
-      category: "Creative",
-      description: "Learn to capture Lagos stunning landscapes during golden hour. Professional photographer guides you to the best viewpoints.",
-      duration: "3 hours",
-      price: "55",
-      currency: "€",
-      rating: "4.9",
-      reviewCount: 67,
-      maxParticipants: 6,
-      image: "/assets/generated_images/Sea_kayaking_Lagos_Portugal_f0637eb8.png",
-      location: "Ponta da Piedade",
-      difficulty: "Easy",
-      coordinates: "37.0833,-8.6667"
-    },
-    {
-      title: "Portuguese Cooking Experience",
-      category: "Cultural",
-      description: "Learn to prepare traditional Portuguese dishes using fresh, local ingredients. Includes market visit and wine tasting.",
-      duration: "4 hours",
-      price: "75",
-      currency: "€",
-      rating: "4.8",
-      reviewCount: 98,
-      maxParticipants: 10,
-      image: "/assets/generated_images/Lagos_historic_town_center_d4804067.png",
-      location: "Lagos Market & Kitchen",
-      difficulty: "Easy",
-      coordinates: "37.1025,-8.6700"
-    }
-  ];
+  // Activities come from the shared catalog (also synced to production on deploy)
+  const sampleActivities = activityCatalog.map((activity) => ({ ...activity, rating: "0.0", reviewCount: 0 }));
 
   try {
     // Check if data already exists

@@ -21,6 +21,8 @@ interface ActivityCardProps {
   onBookNow?: () => void;
 }
 
+const FALLBACK_IMAGE = "/images/activities/coastline.jpg";
+
 const difficultyColors = {
   'Easy': 'bg-success text-white',
   'Moderate': 'bg-yellow-500 text-white',
@@ -66,27 +68,32 @@ export default function ActivityCard({
         <img
           src={image}
           alt={title}
+          loading="lazy"
+          onError={(e) => {
+            if (!e.currentTarget.src.endsWith(FALLBACK_IMAGE)) e.currentTarget.src = FALLBACK_IMAGE;
+          }}
           className="w-full h-48 object-cover"
           data-testid={`img-activity-${id}`}
         />
         
-        {/* Category Badge */}
-        <Badge 
-          className="absolute top-3 left-3 bg-primary text-white"
-          data-testid={`badge-category-${id}`}
-        >
-          {category}
-        </Badge>
-
-        {/* Difficulty Badge */}
-        {difficulty && (
+        {/* Category and Difficulty Badges (positioned via wrapper: Badge's hover-elevate forces position: relative) */}
+        <div className="absolute top-3 left-3 right-3 flex justify-between gap-2">
           <Badge 
-            className={`absolute top-3 right-3 ${difficultyColors[difficulty]}`}
-            data-testid={`badge-difficulty-${id}`}
+            className="bg-primary text-white"
+            data-testid={`badge-category-${id}`}
           >
-            {difficulty}
+            {category}
           </Badge>
-        )}
+
+          {difficulty && (
+            <Badge 
+              className={difficultyColors[difficulty]}
+              data-testid={`badge-difficulty-${id}`}
+            >
+              {difficulty}
+            </Badge>
+          )}
+        </div>
       </div>
 
       <CardContent className="p-6">
@@ -101,17 +108,21 @@ export default function ActivityCard({
               <span data-testid={`text-location-${id}`}>{location}</span>
             </div>
           </div>
-          <div className="text-right">
-            <div className="flex items-center mb-1">
-              <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
-              <span className="font-medium" data-testid={`text-rating-${id}`}>
-                {rating}
-              </span>
+          {reviewCount > 0 ? (
+            <div className="text-right">
+              <div className="flex items-center mb-1">
+                <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
+                <span className="font-medium" data-testid={`text-rating-${id}`}>
+                  {rating}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground" data-testid={`text-reviews-${id}`}>
+                {reviewCount} reviews
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground" data-testid={`text-reviews-${id}`}>
-              {reviewCount} reviews
-            </p>
-          </div>
+          ) : (
+            <Badge variant="secondary" data-testid={`badge-new-${id}`}>New</Badge>
+          )}
         </div>
 
         {/* Description */}

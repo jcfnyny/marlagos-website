@@ -1,16 +1,15 @@
 import ActivityCard from "@/components/ActivityCard";
 import BookingModal from "@/components/BookingModal";
+import ContactModal from "@/components/ContactModal";
 import HeroSection from "@/components/HeroSection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, Waves, Mountain, Camera, Calendar } from "lucide-react";
+import { Filter, Waves, Mountain, Camera, Calendar, Fish, UtensilsCrossed } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-// Import images
-import kayakingImage from "@assets/generated_images/Sea_kayaking_Lagos_Portugal_f0637eb8.png";
-import historyImage from "@assets/generated_images/Lagos_historic_town_center_d4804067.png";
+const PAGE_SIZE = 9;
 
 export default function Activities() {
   // Fetch activities from API
@@ -22,13 +21,19 @@ export default function Activities() {
     }
   });
 
-  const categories = ['All', 'Water Sports', 'Cultural', 'Adventure', 'Creative'];
+  // Build the category list from the data so new categories are always filterable
+  const categories = useMemo(
+    () => ['All', ...Array.from(new Set<string>(activities.map((activity: any) => activity.category)))],
+    [activities]
+  );
   const difficulties = ['All', 'Easy', 'Moderate', 'Challenging'];
 
   // State for filtering
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [sortBy, setSortBy] = useState('rating');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [isContactOpen, setIsContactOpen] = useState(false);
 
   // State for booking modal
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -60,8 +65,8 @@ export default function Activities() {
   }, [activities, selectedCategory, selectedDifficulty, sortBy]);
 
   const handleFilterChange = (type: string, value: string) => {
-    console.log(`${type} filter changed:`, value);
-    
+    setVisibleCount(PAGE_SIZE);
+
     switch (type) {
       case 'category':
         setSelectedCategory(value);
@@ -85,6 +90,8 @@ export default function Activities() {
       case 'Water Sports': return <Waves className="h-4 w-4" />;
       case 'Adventure': return <Mountain className="h-4 w-4" />;
       case 'Creative': return <Camera className="h-4 w-4" />;
+      case 'Wildlife': return <Fish className="h-4 w-4" />;
+      case 'Food & Wine': return <UtensilsCrossed className="h-4 w-4" />;
       default: return <Calendar className="h-4 w-4" />;
     }
   };
@@ -196,7 +203,7 @@ export default function Activities() {
 
           {/* Activities Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-            {filteredAndSortedActivities.map((activity: any) => (
+            {filteredAndSortedActivities.slice(0, visibleCount).map((activity: any) => (
               <ActivityCard 
                 key={activity.id} 
                 {...activity} 
@@ -206,16 +213,18 @@ export default function Activities() {
           </div>
 
           {/* Load More */}
-          <div className="text-center mt-12">
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => console.log('Load more activities')}
-              data-testid="button-load-more"
-            >
-              Show More Activities
-            </Button>
-          </div>
+          {filteredAndSortedActivities.length > visibleCount && (
+            <div className="text-center mt-12">
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => setVisibleCount(count => count + PAGE_SIZE)}
+                data-testid="button-load-more"
+              >
+                Show More Activities
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -261,7 +270,7 @@ export default function Activities() {
 
           <Button 
             size="lg"
-            onClick={() => console.log('Contact for custom activities')}
+            onClick={() => setIsContactOpen(true)}
             data-testid="button-custom-activities"
           >
             Need a Custom Experience?
@@ -314,6 +323,11 @@ export default function Activities() {
         onClose={handleCloseBooking}
         type="activity"
         item={selectedActivity}
+      />
+
+      <ContactModal
+        isOpen={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
       />
     </>
   );
