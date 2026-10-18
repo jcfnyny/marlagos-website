@@ -5,7 +5,7 @@ import HeroSection from "@/components/HeroSection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, Waves, Mountain, Camera, Calendar, Fish, UtensilsCrossed } from "lucide-react";
+import { Filter, Waves, Mountain, Camera, Calendar, Fish, UtensilsCrossed, Smile } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -92,6 +92,7 @@ export default function Activities() {
       case 'Creative': return <Camera className="h-4 w-4" />;
       case 'Wildlife': return <Fish className="h-4 w-4" />;
       case 'Food & Wine': return <UtensilsCrossed className="h-4 w-4" />;
+      case 'Family': return <Smile className="h-4 w-4" />;
       default: return <Calendar className="h-4 w-4" />;
     }
   };

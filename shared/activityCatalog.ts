@@ -151,5 +151,17 @@ export const activityCatalog: CatalogActivity[] = [
     location: "Praia da Marinha, Lagoa",
     difficulty: "Moderate",
     coordinates: "37.0900,-8.4120"
+  },
+  {
+    title: "Sand City Sculpture Park",
+    category: "Family",
+    description: "Wander among giant sculptures carved entirely from sand at Sand City in Lagoa, billed as the world's largest sand sculpture park. Artists from around the world create new themed works each season, making it a hit with all ages. About half an hour's drive from Lagos.",
+    duration: "2 hours",
+    price: "15.00",
+    maxParticipants: 20,
+    image: "/images/activities/beach.jpg",
+    location: "Sand City, Lagoa",
+    difficulty: "Easy",
+    coordinates: "37.1330,-8.4430"
   }
 ];
