@@ -1,12 +1,37 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter } from "lucide-react";
 
 export default function Footer() {
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const { toast } = useToast();
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Contact form submitted');
-    // TODO: Handle contact form submission
+    setIsSubscribing(true);
+    try {
+      await apiRequest("POST", "/api/newsletters", { email: newsletterEmail });
+      toast({
+        title: "You're subscribed!",
+        description: "Thanks for signing up. Lagos tips and offers are on their way."
+      });
+      setNewsletterEmail("");
+    } catch (error) {
+      console.error("Newsletter error:", error);
+      toast({
+        title: "Subscription Failed",
+        description: String(error).includes("400")
+          ? "Please enter a valid email address."
+          : "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubscribing(false);
+    }
   };
 
   const handleSocialClick = (platform: string) => {
@@ -133,9 +158,14 @@ export default function Footer() {
             <p className="text-primary-foreground/80 mb-4 text-sm font-body">
               Get travel tips, special offers, and Lagos insights.
             </p>
-            <form onSubmit={handleContactSubmit} className="space-y-2">
+            <form onSubmit={handleNewsletterSubmit} className="space-y-2">
               <input
                 type="email"
+                required
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                disabled={isSubscribing}
+                aria-label="Email address for newsletter"
                 placeholder="Your email"
                 className="w-full px-3 py-2 bg-primary-foreground/10 border border-primary-foreground/20 rounded-md text-primary-foreground placeholder-primary-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary-foreground/50"
                 data-testid="input-newsletter-email"
@@ -144,10 +174,15 @@ export default function Footer() {
                 type="submit"
                 variant="secondary"
                 className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                disabled={isSubscribing}
                 data-testid="button-newsletter-submit"
               >
-                Subscribe
+                {isSubscribing ? "Subscribing..." : "Subscribe"}
               </Button>
+              <p className="text-primary-foreground/60 text-xs font-body">
+                Unsubscribe anytime. See our{" "}
+                <Link href="/privacy" className="underline hover:text-primary-foreground">Privacy Policy</Link>.
+              </p>
             </form>
           </div>
         </div>

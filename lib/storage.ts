@@ -55,7 +55,8 @@ export interface IStorage {
   createContact(contact: InsertContact): Promise<Contact>;
   
   // Newsletter methods
-  createNewsletter(newsletter: InsertNewsletter): Promise<Newsletter>;
+  // Resolves to undefined when the email is already subscribed
+  createNewsletter(newsletter: InsertNewsletter): Promise<Newsletter | undefined>;
   
   // Availability methods
   getAvailability(resourceType: string, resourceId: number): Promise<Availability[]>;
@@ -289,8 +290,10 @@ class DatabaseStorage implements IStorage {
   }
 
   // Newsletter methods
-  async createNewsletter(newsletter: InsertNewsletter): Promise<Newsletter> {
-    const result = await db.insert(newsletters).values(newsletter).returning();
+  async createNewsletter(newsletter: InsertNewsletter): Promise<Newsletter | undefined> {
+    const result = await db.insert(newsletters).values(newsletter)
+      .onConflictDoNothing({ target: newsletters.email })
+      .returning();
     return result[0];
   }
 

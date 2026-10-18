@@ -1,6 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { storage } from '../../lib/storage.js';
+import { z } from 'zod';
 import { insertNewsletterSchema } from '../../shared/schema.js';
+
+const newsletterSchema = insertNewsletterSchema.extend({
+  email: z.string().trim().toLowerCase().email()
+});
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
@@ -15,13 +20,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'POST') {
-      const validatedData = insertNewsletterSchema.parse(req.body);
+      const validatedData = newsletterSchema.parse(req.body);
       const newsletter = await storage.createNewsletter(validatedData);
-      res.status(201).json(newsletter);
+      // Already-subscribed emails succeed too, without revealing who is on the list
+      res.status(newsletter ? 201 : 200).json({ subscribed: true });
     } else {
       res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: 'Please enter a valid email address' });
+      return;
+    }
     console.error('Error in newsletter API:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
