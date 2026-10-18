@@ -1,6 +1,6 @@
 import ICAL from 'ical';
-import { storage } from './storage';
-import { type InsertAvailability } from '@shared/schema';
+import { storage } from './storage.js';
+import { type InsertAvailability } from '../shared/schema.js';
 
 // Airbnb iCal URLs for our properties
 const PROPERTY_ICAL_URLS = {

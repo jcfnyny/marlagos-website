@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { storage } from '../../lib/storage';
-import { insertContactSchema } from '../../shared/schema';
+import { storage } from '../../lib/storage.js';
+import { insertContactSchema } from '../../shared/schema.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
