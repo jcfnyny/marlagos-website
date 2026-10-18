@@ -103,13 +103,15 @@ export default function PropertyCard({
           </div>
         )}
 
-        {/* Property Type Badge */}
-        <Badge 
-          className="absolute top-3 left-3 bg-background/90 text-foreground"
-          data-testid={`badge-type-${id}`}
-        >
-          {type}
-        </Badge>
+        {/* Property Type Badge (positioned via wrapper: Badge's hover-elevate forces position: relative) */}
+        <div className="absolute top-3 left-3">
+          <Badge
+            className="bg-background/90 text-foreground"
+            data-testid={`badge-type-${id}`}
+          >
+            {type}
+          </Badge>
+        </div>
       </div>
 
       <CardContent className="p-6">
