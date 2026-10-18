@@ -22,7 +22,10 @@ import {
   type InsertAvailability
 } from "../shared/schema.js";
 import { db } from "./db.js";
-import { eq, desc, and, or, ilike, gte, lte } from "drizzle-orm";
+import { eq, desc, and, or, ilike, gte, lte, inArray, type SQL } from "drizzle-orm";
+import { listedActivityTitles } from "../shared/activityCatalog.js";
+
+const isListedActivity = inArray(activities.title, listedActivityTitles);
 
 export interface IStorage {
   // User methods
@@ -170,7 +173,9 @@ class DatabaseStorage implements IStorage {
   // Activity methods
   async getActivities(): Promise<Activity[]> {
     try {
-      return await db.select().from(activities).orderBy(desc(activities.createdAt));
+      return await db.select().from(activities)
+        .where(isListedActivity)
+        .orderBy(desc(activities.createdAt));
     } catch (error) {
       console.error('Error fetching activities:', error);
       return [];
@@ -190,7 +195,7 @@ class DatabaseStorage implements IStorage {
   async getActivitiesByCategory(category: string): Promise<Activity[]> {
     try {
       return await db.select().from(activities)
-        .where(eq(activities.category, category))
+        .where(and(eq(activities.category, category), isListedActivity))
         .orderBy(desc(activities.createdAt));
     } catch (error) {
       console.error('Error fetching activities by category:', error);
@@ -205,7 +210,7 @@ class DatabaseStorage implements IStorage {
 
   async searchActivities(query?: string, category?: string, difficulty?: string): Promise<Activity[]> {
     try {
-      let conditions = [];
+      let conditions: (SQL | undefined)[] = [isListedActivity];
 
       if (query) {
         conditions.push(

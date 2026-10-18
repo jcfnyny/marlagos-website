@@ -38,7 +38,7 @@ export async function seedDatabase() {
   ];
 
   // Activities come from the shared catalog (also synced to production on deploy)
-  const sampleActivities = activityCatalog.map((activity) => ({ ...activity, rating: "0.0", reviewCount: 0 }));
+  const sampleActivities = activityCatalog.map(({ website, provider, ...activity }) => ({ ...activity, rating: "0.0", reviewCount: 0 }));
 
   try {
     // Check if data already exists
