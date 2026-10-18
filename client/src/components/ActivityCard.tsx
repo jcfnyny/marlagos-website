@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, MapPin, Star } from "lucide-react";
+import { Clock, Users, MapPin, Star, ExternalLink } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface ActivityCardProps {
@@ -18,6 +18,8 @@ interface ActivityCardProps {
   image: string;
   location: string;
   difficulty?: 'Easy' | 'Moderate' | 'Challenging';
+  website?: string;
+  provider?: string;
   onBookNow?: () => void;
 }
 
@@ -43,6 +45,8 @@ export default function ActivityCard({
   image,
   location,
   difficulty,
+  website,
+  provider,
   onBookNow
 }: ActivityCardProps) {
   const [, setLocation] = useLocation();
@@ -151,14 +155,29 @@ export default function ActivityCard({
             <span className="text-muted-foreground"> / person</span>
           </div>
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleLearnMore}
-              data-testid={`button-learn-more-${id}`}
-            >
-              Learn More
-            </Button>
+            {website ? (
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={provider ? `Visit ${provider}` : undefined}
+                  data-testid={`link-website-${id}`}
+                >
+                  Website
+                  <ExternalLink className="h-3 w-3 ml-1" />
+                </a>
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleLearnMore}
+                data-testid={`button-learn-more-${id}`}
+              >
+                Learn More
+              </Button>
+            )}
             <Button 
               size="sm"
               onClick={handleBookActivity}

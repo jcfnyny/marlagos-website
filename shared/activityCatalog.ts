@@ -5,7 +5,12 @@ import type { InsertActivity } from "./schema.js";
 // rows by title. Ratings and review counts are never set from here: existing
 // rows keep theirs, new rows start at 0 and display as "New".
 // Images live in client/public/images/activities.
-export type CatalogActivity = Omit<InsertActivity, "rating" | "reviewCount">;
+// website/provider are not stored in the database; the activities page
+// reads them from this file by title.
+export type CatalogActivity = Omit<InsertActivity, "rating" | "reviewCount"> & {
+  website?: string;
+  provider?: string;
+};
 
 export const activityCatalog: CatalogActivity[] = [
   {
@@ -165,3 +170,12 @@ export const activityCatalog: CatalogActivity[] = [
     coordinates: "37.1330,-8.4430"
   }
 ];
+
+const activityLinks = new Map(
+  activityCatalog.map((activity) => [activity.title, { website: activity.website, provider: activity.provider }])
+);
+
+// Website and provider for an activity row from the database, matched by title
+export function getActivityLink(title: string) {
+  return activityLinks.get(title) ?? {};
+}

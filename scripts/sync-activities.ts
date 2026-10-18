@@ -11,7 +11,7 @@ import { activities } from "../shared/schema.js";
 export async function syncActivities(db: any) {
   let updated = 0;
   let inserted = 0;
-  for (const activity of activityCatalog) {
+  for (const { website, provider, ...activity } of activityCatalog) {
     const existing = await db.select({ id: activities.id }).from(activities)
       .where(eq(activities.title, activity.title));
     if (existing.length > 0) {

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Clock, Star, Users } from "lucide-react";
 import { Property, Activity } from "@shared/schema";
+import { getActivityLink } from "@shared/activityCatalog";
 
 // Import images
 import lagosHero from "@assets/generated_images/Lagos_Portugal_coastal_hero_view_35b5bef9.png";
@@ -183,6 +184,7 @@ export default function Home() {
                 image={activity.image}
                 location={activity.location}
                 difficulty={activity.difficulty as 'Easy' | 'Moderate' | 'Challenging'}
+                {...getActivityLink(activity.title)}
                 onBookNow={() => handleBookActivity(activity)}
               />
             ))}

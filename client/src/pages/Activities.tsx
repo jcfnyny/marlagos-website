@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Filter, Waves, Mountain, Camera, Calendar, Fish, UtensilsCrossed, Smile } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { getActivityLink } from "@shared/activityCatalog";
 
 const PAGE_SIZE = 9;
 
@@ -208,6 +209,7 @@ export default function Activities() {
               <ActivityCard 
                 key={activity.id} 
                 {...activity} 
+                {...getActivityLink(activity.title)}
                 onBookNow={() => handleBookActivity(activity)}
               />
             ))}
